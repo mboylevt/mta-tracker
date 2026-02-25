@@ -84,6 +84,8 @@ All configuration is via environment variables (set in `.env` or passed to Docke
 | `BUS_STOP_IDS` | No | `308209` | MTA bus stop ID(s), comma-separated |
 | `REFRESH_INTERVAL_SECONDS` | No | `30` | How often the frontend polls for new data |
 
+GFS Stop IDs for subway stations can be found from the MTA [here](https://catalog.data.gov/dataset/mta-subway-stations-and-complexes)
+Bus Station IDs can be found [here](https://data.ny.gov/Transportation/MTA-Bus-Stops/2ucp-7wg5/about_data)
 ## Dependencies
 
 ### Backend (Python)
