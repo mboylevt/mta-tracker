@@ -52,7 +52,7 @@ MTA_BUS_API_KEY=your_key_here
 docker-compose up --build
 ```
 
-The app will be available at **http://localhost:8080**.
+The app will be available at **http://localhost:9876**.
 
 ### 2b. Run locally for development
 
@@ -71,7 +71,7 @@ npm install
 npm run dev
 ```
 
-The frontend dev server (typically http://localhost:5173) proxies API calls to the backend on port 9876.
+The frontend dev server (typically http://localhost:9876) proxies API calls to the backend on port 9876.
 
 ## Configuration
 
