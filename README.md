@@ -152,7 +152,7 @@ To change the host port, edit `docker-compose.yml`:
 
 ```yaml
 ports:
-  - "3000:8080"  # change 3000 to your preferred port
+  - "9876:9876"  # change 3000 to your preferred port
 ```
 
 ## Design
