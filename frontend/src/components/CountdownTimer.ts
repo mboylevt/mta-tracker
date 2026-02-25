@@ -24,16 +24,15 @@ function tick(): void {
   for (const entry of entries) {
     const diffMs = entry.arrivalTime.getTime() - now;
     const minutes = Math.max(0, Math.floor(diffMs / 60000));
-    const seconds = Math.max(0, Math.floor((diffMs % 60000) / 1000));
 
     if (diffMs <= 0) {
       entry.element.textContent = "now";
       entry.element.classList.add("arriving-now");
     } else if (minutes === 0) {
-      entry.element.textContent = `${seconds}s`;
+      entry.element.textContent = "<1 min";
       entry.element.classList.add("arriving-soon");
     } else {
-      entry.element.textContent = `${minutes}m ${seconds}s`;
+      entry.element.textContent = `${minutes} min`;
       entry.element.classList.remove("arriving-soon", "arriving-now");
     }
   }
