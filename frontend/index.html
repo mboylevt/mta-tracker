@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MTA Transit Tracker</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚇</text></svg>" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="app-header">
+        <div class="mta-logo">MTA</div>
+        <h1>Transit Tracker</h1>
+      </header>
+      <div id="status-banner"></div>
+      <main class="cards-container">
+        <section id="subway-card" class="card">
+          <div class="card-header subway-header">
+            <h2>
+              <span class="line-bullet line-n">N</span>
+              <span class="line-bullet line-w">W</span>
+              Ditmars Blvd
+            </h2>
+          </div>
+          <div class="card-body" id="subway-content">
+            <div class="loading">Loading subway data...</div>
+          </div>
+        </section>
+        <section id="bus-card" class="card">
+          <div class="card-header bus-header">
+            <h2>🚌 Bus — 24 Av / 21 St</h2>
+          </div>
+          <div class="card-body" id="bus-content">
+            <div class="loading">Loading bus data...</div>
+          </div>
+        </section>
+        <section id="citibike-card" class="card">
+          <div class="card-header citibike-header">
+            <h2>🚲 Citi Bike</h2>
+          </div>
+          <div class="card-body" id="citibike-content">
+            <div class="loading">Loading bike data...</div>
+          </div>
+        </section>
+      </main>
+      <footer class="app-footer">
+        <span id="last-updated"></span>
+      </footer>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

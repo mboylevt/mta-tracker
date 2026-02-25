@@ -1,0 +1,10 @@
+services:
+  mta-tracker:
+    build: .
+    ports:
+      - "9876:9876"
+    env_file:
+      - .env
+    environment:
+      - -TZ=America/New_York
+    restart: unless-stopped

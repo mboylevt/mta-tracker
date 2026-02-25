@@ -1,0 +1,388 @@
+/* MTA Transit Tracker — MTA-branded styles */
+
+:root {
+  --mta-blue: #0039a6;
+  --mta-blue-dark: #002d7a;
+  --mta-yellow: #fccc0a;
+  --mta-red: #ee352e;
+  --mta-green: #00933c;
+  --bg-primary: #f5f5f5;
+  --bg-card: #ffffff;
+  --text-primary: #1a1a1a;
+  --text-secondary: #555555;
+  --border-color: #e0e0e0;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+/* Header */
+.app-header {
+  background: var(--mta-blue);
+  color: white;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.mta-logo {
+  background: var(--mta-blue);
+  border: 3px solid white;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.5px;
+  flex-shrink: 0;
+}
+
+.app-header h1 {
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.3px;
+}
+
+/* Status banners */
+.banner {
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  display: none;
+}
+
+.banner-error {
+  background: var(--mta-red);
+  color: white;
+}
+
+.banner-stale {
+  background: var(--mta-yellow);
+  color: #1a1a1a;
+}
+
+.banner-loading {
+  background: #e0e0e0;
+  color: #555;
+}
+
+/* Cards container */
+.cards-container {
+  max-width: 1080px;
+  margin: 24px auto;
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Card */
+.card {
+  background: var(--bg-card);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+}
+
+.card-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.subway-header {
+  background: var(--mta-blue);
+  color: white;
+}
+
+.bus-header {
+  background: #1a73e8;
+  color: white;
+}
+
+.citibike-header {
+  background: #0073cf;
+  color: white;
+}
+
+.card-body {
+  padding: 16px 20px;
+}
+
+/* Line bullets (subway circles) */
+.line-bullet {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 16px;
+  color: #1a1a1a;
+  flex-shrink: 0;
+}
+
+.line-n,
+.line-w {
+  background: var(--mta-yellow);
+  color: #1a1a1a;
+}
+
+/* Side-by-side direction columns */
+.direction-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* Direction groups */
+.direction-group {
+  margin-bottom: 16px;
+}
+
+.direction-columns .direction-group {
+  margin-bottom: 0;
+}
+
+.direction-group:last-child {
+  margin-bottom: 0;
+}
+
+.direction-label {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--border-color);
+  margin-bottom: 8px;
+}
+
+/* Arrivals table */
+.arrivals-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.arrival-row td {
+  padding: 10px 4px;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.arrival-row:last-child td {
+  border-bottom: none;
+}
+
+.headsign {
+  font-size: 15px;
+  flex-grow: 1;
+}
+
+.distance {
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.countdown {
+  font-size: 18px;
+  font-weight: 700;
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  min-width: 80px;
+}
+
+.arriving-soon {
+  color: var(--mta-yellow);
+  background: #1a1a1a;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.arriving-now {
+  color: white;
+  background: var(--mta-green);
+  padding: 2px 8px;
+  border-radius: 4px;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Bus route badge */
+.bus-route {
+  display: inline-block;
+  background: var(--mta-blue);
+  color: white;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  min-width: 48px;
+  text-align: center;
+}
+
+/* Delay badge */
+.delay-badge {
+  background: var(--mta-red);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 3px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* Citibike station grid */
+.citibike-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.citibike-grid .direction-group {
+  margin-bottom: 0;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px 8px;
+}
+
+@media (max-width: 640px) {
+  .citibike-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Citibike station stats */
+.bike-counts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 0 0;
+}
+
+.bike-stat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.bike-count {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  min-width: 24px;
+  text-align: right;
+}
+
+.ebike-count {
+  color: #0073cf;
+}
+
+.dock-count {
+  color: var(--text-secondary);
+}
+
+.bike-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+}
+
+/* Empty / error states */
+.no-service,
+.error-text {
+  text-align: center;
+  padding: 24px 0;
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+
+.error-text {
+  color: var(--mta-red);
+}
+
+.loading {
+  text-align: center;
+  padding: 32px 0;
+  color: var(--text-secondary);
+}
+
+/* Footer */
+.app-footer {
+  text-align: center;
+  padding: 16px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .direction-columns {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-header {
+    padding: 12px 16px;
+  }
+
+  .app-header h1 {
+    font-size: 18px;
+  }
+
+  .cards-container {
+    margin: 16px auto;
+    padding: 0 12px;
+    gap: 16px;
+  }
+
+  .card-body {
+    padding: 12px 16px;
+  }
+
+  .countdown {
+    font-size: 16px;
+    min-width: 64px;
+  }
+}
