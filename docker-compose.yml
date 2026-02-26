@@ -6,5 +6,7 @@ services:
     env_file:
       - .env
     environment:
-      - -TZ=America/New_York
+      - TZ=America/New_York
+    volumes:
+      - ./data/configs:/app/data/configs
     restart: unless-stopped

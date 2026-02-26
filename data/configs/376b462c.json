@@ -1,0 +1,50 @@
+{
+  "id": "376b462c",
+  "name": "Astoria Commute",
+  "subway_stops": [
+    {
+      "stop_id": "R01",
+      "name": "Astoria - Ditmars Blvd",
+      "lines": [
+        "N",
+        "W"
+      ]
+    }
+  ],
+  "bus_stops": [
+    {
+      "stop_id": "553026",
+      "name": "24 AV/21 ST",
+      "routes": [
+        "Q69",
+        "Q100"
+      ]
+    },
+    {
+      "stop_id": "553102",
+      "name": "24 AV/21 ST",
+      "routes": [
+        "Q69",
+        "Q100"
+      ]
+    }
+  ],
+  "citibike_stations": [
+    {
+      "station_id": "7186.15",
+      "name": "19 St & 24 Ave"
+    },
+    {
+      "station_id": "7210.07",
+      "name": "21 St & 23 Ave"
+    },
+    {
+      "station_id": "6923.20",
+      "name": "31 St & Newtown Ave"
+    },
+    {
+      "station_id": "6602.03",
+      "name": "W 41 St & 8 Ave"
+    }
+  ]
+}

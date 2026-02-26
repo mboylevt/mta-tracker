@@ -10,11 +10,17 @@ class SubwayArrival(BaseModel):
     is_delayed: bool
 
 
+class SubwayStationData(BaseModel):
+    stop_id: str
+    station_name: str = ""
+    northbound: list[SubwayArrival] = []
+    southbound: list[SubwayArrival] = []
+
+
 class SubwayResponse(BaseModel):
-    station_name: str
-    manhattan_bound: list[SubwayArrival]
-    ditmars_bound: list[SubwayArrival]
-    updated_at: str
+    stations: list[SubwayStationData] = []
+    updated_at: str = ""
+    error: str | None = None
 
 
 class BusArrival(BaseModel):
@@ -26,12 +32,6 @@ class BusArrival(BaseModel):
 
 
 class BusResponse(BaseModel):
-    arrivals: list[BusArrival]
-    updated_at: str
-
-
-class ConfigResponse(BaseModel):
-    refresh_interval_seconds: int
-    station_name: str
-    subway_lines: list[str]
-    bus_stop_name: str
+    arrivals: list[BusArrival] = []
+    updated_at: str = ""
+    error: str | None = None

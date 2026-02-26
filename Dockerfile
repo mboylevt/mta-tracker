@@ -22,6 +22,9 @@ COPY backend/ ./backend/
 # Copy built frontend from stage 1
 COPY --from=frontend-build /static ./static/
 
+# Create data directory for dashboard configs
+RUN mkdir -p /app/data/configs
+
 EXPOSE 9876
 
 CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "9876"]

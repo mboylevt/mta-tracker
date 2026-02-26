@@ -8,44 +8,18 @@
   </head>
   <body>
     <div id="app">
-      <header class="app-header">
-        <div class="mta-logo">MTA</div>
-        <h1>Transit Tracker</h1>
+      <header class="app-header" style="background:#0039a6;color:#fff;padding:16px 24px;display:flex;align-items:center">
+        <a href="#/" class="header-home-link" style="display:flex;align-items:center;gap:16px;text-decoration:none;color:#fff">
+          <svg class="mta-logo-svg" width="48" height="48" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="48" fill="#0039A6"/>
+            <circle cx="50" cy="50" r="43" fill="none" stroke="white" stroke-width="3"/>
+            <text x="50" y="58" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="30" font-weight="700" fill="white" letter-spacing="-1">MTA</text>
+          </svg>
+          <h1 style="font-size:22px;font-weight:500;margin:0">Transit Tracker</h1>
+        </a>
       </header>
       <div id="status-banner"></div>
-      <main class="cards-container">
-        <section id="subway-card" class="card">
-          <div class="card-header subway-header">
-            <h2>
-              <span class="line-bullet line-n">N</span>
-              <span class="line-bullet line-w">W</span>
-              Ditmars Blvd
-            </h2>
-          </div>
-          <div class="card-body" id="subway-content">
-            <div class="loading">Loading subway data...</div>
-          </div>
-        </section>
-        <section id="bus-card" class="card">
-          <div class="card-header bus-header">
-            <h2>🚌 Bus — 24 Av / 21 St</h2>
-          </div>
-          <div class="card-body" id="bus-content">
-            <div class="loading">Loading bus data...</div>
-          </div>
-        </section>
-        <section id="citibike-card" class="card">
-          <div class="card-header citibike-header">
-            <h2>🚲 Citi Bike</h2>
-          </div>
-          <div class="card-body" id="citibike-content">
-            <div class="loading">Loading bike data...</div>
-          </div>
-        </section>
-      </main>
-      <footer class="app-footer">
-        <span id="last-updated"></span>
-      </footer>
+      <main id="page-content"></main>
     </div>
     <script type="module" src="/src/main.ts"></script>
   </body>

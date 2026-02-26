@@ -1,0 +1,38 @@
+{
+  "id": "3f19e803",
+  "name": "Datadog to Home",
+  "subway_stops": [
+    {
+      "stop_id": "A27",
+      "name": "42 St-Port Authority Bus Terminal",
+      "lines": [
+        "E"
+      ]
+    },
+    {
+      "stop_id": "R16",
+      "name": "Times Sq-42 St",
+      "lines": [
+        "N",
+        "W"
+      ]
+    }
+  ],
+  "bus_stops": [
+    {
+      "stop_id": "982495",
+      "name": "JACKSON AV/42 RD",
+      "routes": [
+        "Q100"
+      ]
+    },
+    {
+      "stop_id": "701083",
+      "name": "28 ST/42 RD",
+      "routes": [
+        "Q69"
+      ]
+    }
+  ],
+  "citibike_stations": []
+}

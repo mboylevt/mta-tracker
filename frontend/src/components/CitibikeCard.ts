@@ -31,9 +31,10 @@ function renderStation(station: CitibikeStation): string {
   `;
 }
 
-export function renderCitibikeCard(data: CitibikeResponse): void {
-  const container = document.getElementById("citibike-content")!;
-
+export function renderCitibikeCard(
+  data: CitibikeResponse,
+  container: HTMLElement
+): void {
   if (data.stations.length === 0) {
     container.innerHTML = '<p class="no-service">No station data available</p>';
     return;

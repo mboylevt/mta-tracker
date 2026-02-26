@@ -4,9 +4,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-from backend.config import settings
-from backend.models.arrivals import ConfigResponse
-from backend.routers import bus, citibike, subway
+from backend.routers import bus, citibike, dashboard, stations, subway
 
 logging.basicConfig(
     level=logging.INFO,
@@ -18,16 +16,8 @@ app = FastAPI(title="MTA Transit Tracker")
 app.include_router(subway.router, prefix="/api")
 app.include_router(bus.router, prefix="/api")
 app.include_router(citibike.router, prefix="/api")
-
-
-@app.get("/api/config", response_model=ConfigResponse)
-async def get_config():
-    return ConfigResponse(
-        refresh_interval_seconds=settings.refresh_interval_seconds,
-        station_name="Astoria - Ditmars Blvd",
-        subway_lines=["N", "W"],
-        bus_stop_name="24 Av / 21 St",
-    )
+app.include_router(dashboard.router, prefix="/api")
+app.include_router(stations.router, prefix="/api")
 
 
 @app.get("/api/health")

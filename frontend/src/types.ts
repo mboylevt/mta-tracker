@@ -1,3 +1,5 @@
+// --- Arrival data ---
+
 export interface SubwayArrival {
   line: string;
   direction: string;
@@ -7,11 +9,17 @@ export interface SubwayArrival {
   is_delayed: boolean;
 }
 
-export interface SubwayResponse {
+export interface SubwayStationData {
+  stop_id: string;
   station_name: string;
-  manhattan_bound: SubwayArrival[];
-  ditmars_bound: SubwayArrival[];
+  northbound: SubwayArrival[];
+  southbound: SubwayArrival[];
+}
+
+export interface SubwayResponse {
+  stations: SubwayStationData[];
   updated_at: string;
+  error?: string;
 }
 
 export interface BusArrival {
@@ -44,9 +52,56 @@ export interface CitibikeResponse {
   updated_at: string;
 }
 
-export interface ConfigResponse {
-  refresh_interval_seconds: number;
-  station_name: string;
-  subway_lines: string[];
-  bus_stop_name: string;
+// --- Dashboard config ---
+
+export interface SubwayStopConfig {
+  stop_id: string;
+  name: string;
+  lines: string[];
+}
+
+export interface BusStopConfig {
+  stop_id: string;
+  name: string;
+  routes: string[];
+}
+
+export interface CitibikeStationConfig {
+  station_id: string;
+  name: string;
+}
+
+export interface DashboardConfig {
+  id: string;
+  name: string;
+  subway_stops: SubwayStopConfig[];
+  bus_stops: BusStopConfig[];
+  citibike_stations: CitibikeStationConfig[];
+}
+
+export interface DashboardSummary {
+  id: string;
+  name: string;
+  subway_stop_count: number;
+  bus_stop_count: number;
+  citibike_station_count: number;
+}
+
+// --- Station search results ---
+
+export interface SubwayStationResult {
+  stop_id: string;
+  name: string;
+  lines: string[];
+}
+
+export interface BusStopResult {
+  stop_id: string;
+  name: string;
+  routes: string[];
+}
+
+export interface CitibikeStationResult {
+  station_id: string;
+  name: string;
 }

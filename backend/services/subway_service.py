@@ -5,81 +5,143 @@ import time
 
 from nyct_gtfs import NYCTFeed
 
-from backend.config import settings
-
 logger = logging.getLogger(__name__)
 
-_feed: NYCTFeed | None = None
-_last_refresh: float = 0
+# Cache feeds by line key, each entry is (feed, last_refresh_monotonic)
+_feeds: dict[str, tuple[NYCTFeed, float]] = {}
 CACHE_SECONDS = 15
 
+# Map stop_id first character to a representative line letter for NYCTFeed
+_STOP_PREFIX_TO_LINE: dict[str, str] = {
+    "A": "A", "H": "A",
+    "B": "B", "D": "D", "F": "F", "M": "M",
+    "G": "G",
+    "J": "J",
+    "L": "L",
+    "R": "N",
+    "S": "SI",
+}
 
-def _get_feed() -> NYCTFeed:
-    """Get or create the feed, refreshing if stale. Must be called from a thread."""
-    global _feed, _last_refresh
 
+def _line_for_stop(stop_id: str) -> str:
+    base = stop_id.rstrip("NS")
+    if not base:
+        return "1"
+    first = base[0].upper()
+    if first.isdigit():
+        return "1"
+    return _STOP_PREFIX_TO_LINE.get(first, "1")
+
+
+def _get_feed(line_key: str) -> NYCTFeed:
     now = time.monotonic()
-    if _feed is None:
-        logger.info("Creating new NQRW feed")
-        _feed = NYCTFeed("N")
-        _last_refresh = now
-    elif now - _last_refresh > CACHE_SECONDS:
-        logger.info("Refreshing NQRW feed")
-        _feed.refresh()
-        _last_refresh = now
+    if line_key in _feeds:
+        feed, last = _feeds[line_key]
+        if now - last <= CACHE_SECONDS:
+            return feed
+        feed.refresh()
+        _feeds[line_key] = (feed, now)
+        return feed
 
-    return _feed
+    logger.info("Creating NYCTFeed for line key %s", line_key)
+    feed = NYCTFeed(line_key)
+    _feeds[line_key] = (feed, now)
+    return feed
 
 
-def _build_arrivals(feed: NYCTFeed) -> dict:
-    """Extract N/W arrivals at Ditmars Blvd from the feed."""
-    stop_ids = [s.strip() for s in settings.subway_stop_ids.split(",")]
-    now = datetime.datetime.now()
+def _build_arrivals_sync(stop_configs: list[dict]) -> dict:
+    """
+    stop_configs: list of {"stop_id": "R01", "lines": ["N", "W"]}.
+    Empty lines list means show all lines.
+    Returns a SubwayResponse-compatible dict.
+    """
+    # Build lookup: parent stop_id -> set of allowed lines (empty = all)
+    line_filters: dict[str, set[str]] = {}
+    stop_ids = []
+    for cfg in stop_configs:
+        sid = cfg["stop_id"]
+        stop_ids.append(sid)
+        lines = cfg.get("lines", [])
+        line_filters[sid] = set(lines) if lines else set()
 
-    manhattan_bound = []
-    ditmars_bound = []
+    # Group parent stop IDs by the feed line they belong to
+    line_to_parents: dict[str, set[str]] = {}
+    for sid in stop_ids:
+        line = _line_for_stop(sid)
+        line_to_parents.setdefault(line, set()).add(sid)
 
-    trips = feed.filter_trips(line_id=["N", "W"])
-
-    for trip in trips:
-        for stop in trip.stop_time_updates:
-            if stop.stop_id not in stop_ids:
-                continue
-
-            arrival_dt = stop.arrival
-            if arrival_dt is None:
-                continue
-
-            minutes = (arrival_dt - now).total_seconds() / 60
-            if minutes < -1:
-                continue
-
-            entry = {
-                "line": trip.route_id,
-                "direction": "Manhattan" if stop.stop_id.endswith("S") else "Ditmars Blvd",
-                "arrival_time": arrival_dt.isoformat(),
-                "minutes_until_arrival": round(max(minutes, 0), 1),
-                "headsign": getattr(trip, "headsign_text", "") or "",
-                "is_delayed": bool(getattr(trip, "has_delay_alert", False)),
-            }
-
-            if stop.stop_id.endswith("S"):
-                manhattan_bound.append(entry)
-            else:
-                ditmars_bound.append(entry)
-
-    manhattan_bound.sort(key=lambda x: x["minutes_until_arrival"])
-    ditmars_bound.sort(key=lambda x: x["minutes_until_arrival"])
-
-    return {
-        "station_name": "Astoria - Ditmars Blvd",
-        "manhattan_bound": manhattan_bound,
-        "ditmars_bound": ditmars_bound,
-        "updated_at": now.isoformat(),
+    # Prepare result buckets
+    results: dict[str, dict[str, list]] = {
+        sid: {"northbound": [], "southbound": []} for sid in stop_ids
     }
 
+    now = datetime.datetime.now()
 
-async def get_subway_arrivals() -> dict:
-    """Async wrapper — runs blocking nyct-gtfs code in a thread."""
-    feed = await asyncio.to_thread(_get_feed)
-    return await asyncio.to_thread(_build_arrivals, feed)
+    for line_key, parents in line_to_parents.items():
+        try:
+            feed = _get_feed(line_key)
+        except Exception:
+            logger.exception("Failed to fetch feed for line key %s", line_key)
+            continue
+
+        for trip in feed.trips:
+            route = trip.route_id  # e.g. "N", "W", "A"
+
+            for stop in trip.stop_time_updates:
+                full_id = stop.stop_id  # e.g. "R01N"
+                if not full_id:
+                    continue
+                suffix = full_id[-1]
+                parent = full_id[:-1] if suffix in ("N", "S") else full_id
+
+                if parent not in parents:
+                    continue
+
+                # Apply line filter
+                allowed = line_filters.get(parent, set())
+                if allowed and route not in allowed:
+                    continue
+
+                arrival_dt = stop.arrival
+                if arrival_dt is None:
+                    continue
+
+                minutes = (arrival_dt - now).total_seconds() / 60
+                if minutes < -1:
+                    continue
+
+                entry = {
+                    "line": route,
+                    "direction": "Uptown" if suffix == "N" else "Downtown",
+                    "arrival_time": arrival_dt.isoformat(),
+                    "minutes_until_arrival": round(max(minutes, 0), 1),
+                    "headsign": getattr(trip, "headsign_text", "") or "",
+                    "is_delayed": bool(
+                        getattr(trip, "has_delay_alert", False)
+                    ),
+                }
+
+                bucket = "northbound" if suffix == "N" else "southbound"
+                results[parent][bucket].append(entry)
+
+    # Sort each direction
+    for sid in results:
+        for d in ("northbound", "southbound"):
+            results[sid][d].sort(key=lambda x: x["minutes_until_arrival"])
+
+    stations = [
+        {
+            "stop_id": sid,
+            "station_name": "",
+            "northbound": results[sid]["northbound"],
+            "southbound": results[sid]["southbound"],
+        }
+        for sid in stop_ids
+    ]
+
+    return {"stations": stations, "updated_at": now.isoformat()}
+
+
+async def get_subway_arrivals(stop_configs: list[dict]) -> dict:
+    """Async wrapper - runs blocking nyct-gtfs code in a thread."""
+    return await asyncio.to_thread(_build_arrivals_sync, stop_configs)
