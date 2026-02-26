@@ -9,7 +9,7 @@ RUN npm run build
 # Stage 2: Python runtime
 FROM python:3.11-slim
 ENV TZ=America/New_York
-RUN apt-get update && apt-get install -y --no-install-recommends tzdata && rm -rf /var/lib/apt/lists/* && ln -sf /usr/share/zoneinfo/$TZ /etc/local time && echo $TZ > /etc/timezone
+RUN apt-get update && apt-get install -y --no-install-recommends tzdata && rm -rf /var/lib/apt/lists/* && ln -sf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 WORKDIR /app
 
 # Install Python dependencies
