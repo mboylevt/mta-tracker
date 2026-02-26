@@ -11,26 +11,38 @@ logger = logging.getLogger(__name__)
 _feeds: dict[str, tuple[NYCTFeed, float]] = {}
 CACHE_SECONDS = 15
 
-# Map stop_id first character to a representative line letter for NYCTFeed
-_STOP_PREFIX_TO_LINE: dict[str, str] = {
-    "A": "A", "H": "A",
-    "B": "B", "D": "D", "F": "F", "M": "M",
-    "G": "G",
-    "J": "J",
-    "L": "L",
-    "R": "N",
-    "S": "SI",
+# Valid feed keys accepted by NYCTFeed
+_VALID_FEED_KEYS = {
+    "1", "2", "3", "4", "5", "6", "7", "S", "GS",
+    "A", "C", "E", "H", "FS", "SF", "SR",
+    "B", "D", "F", "M",
+    "G",
+    "J", "Z",
+    "N", "Q", "R", "W",
+    "L",
+    "SI", "SIR",
 }
 
 
-def _line_for_stop(stop_id: str) -> str:
-    base = stop_id.rstrip("NS")
-    if not base:
-        return "1"
-    first = base[0].upper()
-    if first.isdigit():
-        return "1"
-    return _STOP_PREFIX_TO_LINE.get(first, "1")
+# Map each valid feed key to a canonical representative so we don't
+# fetch the same underlying feed URL multiple times.
+_CANONICAL_FEED: dict[str, str] = {}
+for _k in _VALID_FEED_KEYS:
+    _url = NYCTFeed._train_to_url.get(_k, "")
+    # Find the first key we've already mapped to this URL, or use this one.
+    for _prev_k, _prev_url in list(_CANONICAL_FEED.items()):
+        if NYCTFeed._train_to_url.get(_prev_k, "") == _url:
+            _CANONICAL_FEED[_k] = _prev_k
+            break
+    else:
+        _CANONICAL_FEED[_k] = _k
+
+
+def _feeds_for_lines(lines: list[str]) -> set[str]:
+    """Return the deduplicated set of canonical feed keys for the given lines."""
+    if not lines:
+        return {"1", "A", "B", "G", "J", "L", "N", "SI"}
+    return {_CANONICAL_FEED[l] for l in lines if l in _CANONICAL_FEED}
 
 
 def _get_feed(line_key: str) -> NYCTFeed:
@@ -64,11 +76,14 @@ def _build_arrivals_sync(stop_configs: list[dict]) -> dict:
         lines = cfg.get("lines", [])
         line_filters[sid] = set(lines) if lines else set()
 
-    # Group parent stop IDs by the feed line they belong to
-    line_to_parents: dict[str, set[str]] = {}
-    for sid in stop_ids:
-        line = _line_for_stop(sid)
-        line_to_parents.setdefault(line, set()).add(sid)
+    # Determine which feeds to query based on configured lines per stop,
+    # and track which parent stop_ids each feed should look for.
+    feed_to_parents: dict[str, set[str]] = {}
+    for cfg in stop_configs:
+        sid = cfg["stop_id"]
+        feed_keys = _feeds_for_lines(cfg.get("lines", []))
+        for key in feed_keys:
+            feed_to_parents.setdefault(key, set()).add(sid)
 
     # Prepare result buckets
     results: dict[str, dict[str, list]] = {
@@ -77,7 +92,7 @@ def _build_arrivals_sync(stop_configs: list[dict]) -> dict:
 
     now = datetime.datetime.now()
 
-    for line_key, parents in line_to_parents.items():
+    for line_key, parents in feed_to_parents.items():
         try:
             feed = _get_feed(line_key)
         except Exception:

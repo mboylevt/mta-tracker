@@ -21,35 +21,6 @@ GTFS_STATIC_URL = (
 
 _subway_cache: list[dict] | None = None
 
-# Approximate line associations by stop_id first character
-_LINES_BY_PREFIX: dict[str, list[str]] = {
-    "1": ["1", "2", "3"],
-    "2": ["1", "2", "3"],
-    "3": ["1", "2", "3"],
-    "4": ["4", "5", "6"],
-    "5": ["4", "5", "6"],
-    "6": ["4", "5", "6"],
-    "7": ["7"],
-    "9": ["S"],
-    "A": ["A", "C", "E"],
-    "B": ["B", "D"],
-    "D": ["B", "D", "F", "M"],
-    "F": ["F", "M"],
-    "G": ["G"],
-    "H": ["A", "S"],
-    "J": ["J", "Z"],
-    "L": ["L"],
-    "M": ["M"],
-    "R": ["N", "Q", "R", "W"],
-    "S": ["SIR"],
-}
-
-
-def _guess_lines(stop_id: str) -> list[str]:
-    first = stop_id[0].upper() if stop_id else ""
-    return _LINES_BY_PREFIX.get(first, [])
-
-
 async def _load_subway_stations() -> list[dict]:
     global _subway_cache
     if _subway_cache is not None:
@@ -60,27 +31,52 @@ async def _load_subway_stations() -> list[dict]:
         resp = await client.get(GTFS_STATIC_URL, timeout=30, follow_redirects=True)
         resp.raise_for_status()
 
-    stations: list[dict] = []
-    seen: set[str] = set()
+    zf_bytes = io.BytesIO(resp.content)
 
-    with zipfile.ZipFile(io.BytesIO(resp.content)) as zf:
+    # Step 1: Map trip_id -> route_id from trips.txt
+    trip_to_route: dict[str, str] = {}
+    with zipfile.ZipFile(zf_bytes) as zf:
+        with zf.open("trips.txt") as f:
+            reader = csv.DictReader(io.TextIOWrapper(f, encoding="utf-8-sig"))
+            for row in reader:
+                trip_to_route[row["trip_id"]] = row["route_id"]
+
+    # Step 2: Map child stop_id -> parent from stops.txt, collect parent stations
+    parent_stations: dict[str, str] = {}  # parent stop_id -> name
+    child_to_parent: dict[str, str] = {}  # child stop_id -> parent stop_id
+    with zipfile.ZipFile(zf_bytes) as zf:
         with zf.open("stops.txt") as f:
             reader = csv.DictReader(io.TextIOWrapper(f, encoding="utf-8-sig"))
             for row in reader:
-                # Only parent stations (location_type == "1")
-                if row.get("location_type") != "1":
-                    continue
-                stop_id = row["stop_id"]
-                if stop_id in seen:
-                    continue
-                seen.add(stop_id)
-                stations.append(
-                    {
-                        "stop_id": stop_id,
-                        "name": row["stop_name"],
-                        "lines": _guess_lines(stop_id),
-                    }
-                )
+                if row.get("location_type") == "1":
+                    parent_stations[row["stop_id"]] = row["stop_name"]
+                elif row.get("parent_station"):
+                    child_to_parent[row["stop_id"]] = row["parent_station"]
+
+    # Step 3: Scan stop_times.txt to find which routes serve each parent station
+    parent_routes: dict[str, set[str]] = {sid: set() for sid in parent_stations}
+    with zipfile.ZipFile(zf_bytes) as zf:
+        with zf.open("stop_times.txt") as f:
+            reader = csv.DictReader(io.TextIOWrapper(f, encoding="utf-8-sig"))
+            for row in reader:
+                child_id = row["stop_id"]
+                parent_id = child_to_parent.get(child_id)
+                if parent_id and parent_id in parent_routes:
+                    route = trip_to_route.get(row["trip_id"])
+                    if route:
+                        parent_routes[parent_id].add(route)
+
+    # Build station list
+    stations: list[dict] = []
+    for stop_id, name in parent_stations.items():
+        lines = sorted(parent_routes.get(stop_id, set()))
+        stations.append(
+            {
+                "stop_id": stop_id,
+                "name": name,
+                "lines": lines,
+            }
+        )
 
     stations.sort(key=lambda s: s["name"])
     _subway_cache = stations
