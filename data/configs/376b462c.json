@@ -9,6 +9,13 @@
         "N",
         "W"
       ]
+    },
+    {
+      "stop_id": "G21",
+      "name": "Queens Plaza",
+      "lines": [
+        "E"
+      ]
     }
   ],
   "bus_stops": [

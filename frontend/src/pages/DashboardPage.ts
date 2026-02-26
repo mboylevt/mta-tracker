@@ -1,8 +1,9 @@
 import type { DashboardConfig } from "../types";
-import { fetchDashboard, fetchSubway, fetchBus, fetchCitibike } from "../api";
+import { fetchDashboard, fetchSubway, fetchBus, fetchCitibike, fetchAlerts } from "../api";
 import { renderSubwayCard } from "../components/SubwayCard";
 import { renderBusCard } from "../components/BusCard";
 import { renderCitibikeCard } from "../components/CitibikeCard";
+import { renderAlertsBanner } from "../components/AlertsBanner";
 import {
   clearCountdowns,
   startCountdownTimer,
@@ -27,6 +28,14 @@ async function refresh(): Promise<void> {
 
   const promises: Promise<unknown>[] = [];
   const promiseLabels: string[] = [];
+
+  // Alerts — collect all routes from the dashboard config
+  const subwayRoutes = config.subway_stops.flatMap((s) => s.lines);
+  const busRoutes = config.bus_stops.flatMap((s) => s.routes);
+  if (subwayRoutes.length || busRoutes.length) {
+    promises.push(fetchAlerts(subwayRoutes, busRoutes));
+    promiseLabels.push("alerts");
+  }
 
   // Subway — single fetch for all stops
   const subwayStops = config.subway_stops.map((s) => ({
@@ -58,6 +67,18 @@ async function refresh(): Promise<void> {
   for (let i = 0; i < results.length; i++) {
     const label = promiseLabels[i];
     const r = results[i];
+
+    if (label === "alerts") {
+      const alertsContainer = document.getElementById("alerts-content");
+      if (r.status === "fulfilled" && alertsContainer) {
+        renderAlertsBanner(
+          r.value as import("../types").AlertsResponse,
+          alertsContainer
+        );
+      }
+      // Don't count alerts failure as a data failure
+      continue;
+    }
 
     if (label === "subway") {
       if (r.status === "fulfilled") {
@@ -188,6 +209,7 @@ export async function renderDashboardPage(
       <h2 class="dashboard-title">${config.name}</h2>
       <button class="btn btn-small btn-edit" id="edit-btn">Edit</button>
     </div>
+    <div id="alerts-content" class="alerts-container" style="display:none"></div>
     <div class="cards-container">${cardsHtml}</div>
     <footer class="app-footer"><span id="last-updated"></span></footer>
   `;

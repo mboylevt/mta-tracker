@@ -52,6 +52,22 @@ export interface CitibikeResponse {
   updated_at: string;
 }
 
+// --- Service alerts ---
+
+export interface ServiceAlert {
+  alert_id: string;
+  header: string;
+  description: string;
+  affected_routes: string[];
+  effect: string;
+  alert_type: "subway" | "bus";
+}
+
+export interface AlertsResponse {
+  alerts: ServiceAlert[];
+  updated_at: string;
+}
+
 // --- Dashboard config ---
 
 export interface SubwayStopConfig {

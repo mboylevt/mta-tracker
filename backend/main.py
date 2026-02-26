@@ -4,7 +4,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-from backend.routers import bus, citibike, dashboard, stations, subway
+from backend.routers import alerts, bus, citibike, dashboard, stations, subway
 
 logging.basicConfig(
     level=logging.INFO,
@@ -13,6 +13,7 @@ logging.basicConfig(
 
 app = FastAPI(title="MTA Transit Tracker")
 
+app.include_router(alerts.router, prefix="/api")
 app.include_router(subway.router, prefix="/api")
 app.include_router(bus.router, prefix="/api")
 app.include_router(citibike.router, prefix="/api")

@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+node_modules/
+static/
+dist/
+.vite/
+*.egg-info/
+.mypy_cache/
+CLAUDE.md
+.env

@@ -1,4 +1,5 @@
 import type {
+  AlertsResponse,
   SubwayResponse,
   BusResponse,
   CitibikeResponse,
@@ -39,6 +40,18 @@ async function putJSON<T>(url: string, body: unknown): Promise<T> {
     throw new Error(`${url}: ${resp.status} ${resp.statusText}`);
   }
   return resp.json() as Promise<T>;
+}
+
+// --- Service alerts ---
+
+export function fetchAlerts(
+  subwayRoutes: string[],
+  busRoutes: string[]
+): Promise<AlertsResponse> {
+  const params = new URLSearchParams();
+  if (subwayRoutes.length) params.set("subway_routes", subwayRoutes.join(","));
+  if (busRoutes.length) params.set("bus_routes", busRoutes.join(","));
+  return fetchJSON<AlertsResponse>(`/api/alerts?${params.toString()}`);
 }
 
 // --- Data endpoints (parameterized) ---

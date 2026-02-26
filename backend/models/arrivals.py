@@ -35,3 +35,17 @@ class BusResponse(BaseModel):
     arrivals: list[BusArrival] = []
     updated_at: str = ""
     error: str | None = None
+
+
+class ServiceAlert(BaseModel):
+    alert_id: str
+    header: str
+    description: str
+    affected_routes: list[str]
+    effect: str
+    alert_type: str  # "subway" or "bus"
+
+
+class AlertsResponse(BaseModel):
+    alerts: list[ServiceAlert] = []
+    updated_at: str = ""
